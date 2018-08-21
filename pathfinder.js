@@ -23,29 +23,34 @@ var PF = {
 
     },
 
-    pathfinder: function(x, y, size) {    // put starting x, y and a size of grid to navigate
+    pathfinder: function(x, y, size_) {    // put starting x, y and a size of grid to navigate
 
         this.x = x;
         this.y = y;
 
         var f_x = x, f_y = y;    // FOR FUNCTIONS
-        var size = size;
+        var size = size_;
 
         this.find_path = function(destination_x, destination_y) {
 
             var valid_path = "";
             var paths = [""];
             var found = false;
+            var tries = 0;
 
             eval("_"+destination_x+"_"+destination_y+"_='destination'");
 
             function check(coordinate) {
                 var to_return;
+                var split_1 = coordinate.split("_");
+                split_1.shift();
+                if ( split_1[0] > size || split_1[1] > size || split_1[0] < 0 || split_1[1] < 0 ) {
+                    return;
+                }
                 if ( eval(coordinate) == "obstacle" ) {
                     to_return = "obstacle";
                 } else if ( eval(coordinate) == "destination" ) {
                     to_return = "destination";
-                    //debugger;
                 } else if ( eval(coordinate) == "Empty" ) {
                     to_return = "empty";
                 }
@@ -55,14 +60,16 @@ var PF = {
             function multiply(path) {
                 if ( found ) {
                     console.log(valid_path);
+                    paths = [""];
                     return true;
                 }
-                function refresh() {
-                    temp_x = f_x, temp_y = f_y;
-                    decode = path.split("");
-                    coordinate = "";
-                    for ( var i = 0; i <= decode.length; i ++ ) {
 
+                var temp_x = f_x, temp_y = f_y;
+                var decode = path.split("");
+                var coordinate = "";
+
+                function decode_() {
+                    for ( var i = 0; i <= decode.length; i ++ ) {
                         if ( decode[i] == 1 ) {
                             temp_y --;
                         } else if ( decode[i] == 2 ) {
@@ -72,26 +79,10 @@ var PF = {
                         } else if ( decode[i] == 4 ) {
                             temp_x ++;
                         }
-
-                    }
-                    console.log(paths);
-                }
-
-                var temp_x = f_x, temp_y = f_y;
-                var decode = path.split("");
-                var coordinate = "";
-
-                for ( var i = 0; i <= decode.length; i ++ ) {
-                    if ( decode[i] == 1 ) {
-                        temp_y --;
-                    } else if ( decode[i] == 2 ) {
-                        temp_y ++;
-                    } else if ( decode[i] == 3 ) {
-                        temp_x --;
-                    } else if ( decode[i] == 4 ) {
-                        temp_x ++;
                     }
                 }
+
+                decode_();
 
                 function up() {
                     temp_y --;
@@ -105,6 +96,7 @@ var PF = {
                     if( check(coordinate) == "empty" ) {
                         var new_path = path + "1";
                         paths.push(new_path);
+                        tries ++;
                     } else if ( check(coordinate) == "destination" ) {
                         var new_path = path + "1";
                         valid_path = new_path;
@@ -123,6 +115,7 @@ var PF = {
                     if( check(coordinate) == "empty" ) {
                         var new_path = path + "2";
                         paths.push(new_path);
+                        tries ++;
                     } else if ( check(coordinate) == "destination" ) {
                         var new_path = path + "2";
                         valid_path = new_path;
@@ -141,6 +134,7 @@ var PF = {
                     if( check(coordinate) == "empty" ) {
                         var new_path = path + "3";
                         paths.push(new_path);
+                        tries ++;
                     } else if ( check(coordinate) == "destination" ) {
                         var new_path = path + "3";
                         valid_path = new_path;
@@ -159,6 +153,7 @@ var PF = {
                     if( check(coordinate) == "empty" ) {
                         var new_path = path + "4";
                         paths.push(new_path);
+                        tries ++;
                     } else if ( check(coordinate) == "destination" ) {
                         var new_path = path + "4";
                         valid_path = new_path;
@@ -166,27 +161,38 @@ var PF = {
                     }
                 }
                 function multiply_all_directions() {
-                    refresh();
                     up();
-                    refresh();
                     down();
-                    refresh();
                     left();
-                    refresh();
                     right();
-                    refresh();
                 }
                 multiply_all_directions();
             }
 
             function start() {
                 while( found == false ) {
-                    if ( ( valid_path != "" ) || ( paths.length >= 10000 ) ) {
+                    if ( ( valid_path != "" ) || ( tries >= 1000000 ) ) {
                         found = true;
-                        console.log(valid_path);
                     } else {
                         for ( var i = 0; i <= paths.length; i ++ ) {
+                            var decode = paths[i].split("");
+                            clean_up();
+                            function clean_up() {
+                                for ( var n = 1; n < decode.length; n ++ ) {
+                                    if ( (decode[n] == 1 && decode[n-1] == 2) || (decode[n] == 2 && decode[n-1] == 1) || (decode[n] == 3 && decode[n-1] == 4) || (decode[n] == 4 && decode[n-1] == 3) ) {
+                                        var to_delete = paths.indexOf(paths[i]);
+                                        paths.splice(to_delete, 1);
+                                    }
+                                }
+                            }
+                            
                             multiply(paths[i]);
+                            if ( paths.length > 1000 ) {
+                                for ( var m = 0; m <= 1; m ++ ) {
+                                    paths.shift();
+                                }
+                                clean_up();
+                            }
                         }
                     }
                 }
