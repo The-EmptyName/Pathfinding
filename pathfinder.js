@@ -22,7 +22,27 @@ var PF = {
         }
 
     },
-
+    decode_and_globalize: function(variable, start_x, start_y) {
+        this.value = variable;
+        this.decoded = [];
+        this.decode_path = function() {
+        var to_decode = variable.split("");
+        var x_ = start_x, y_ = start_y;
+            for ( var i = 0; i < to_decode.length; i ++ ) {
+                if ( to_decode[i] == 1 ) {
+                    y_ --;
+                } else if ( to_decode[i] == 2 ) {
+                    y_ ++;
+                } else if ( to_decode[i] == 3 ) {
+                    x_ --;
+                } else if ( to_decode[i] == 4 ) {
+                    x_ ++;
+                }
+                var to_add = "_"+x_+"_"+y_;
+                this.decoded.push(to_add);
+            }
+        }
+    },
     pathfinder: function(x, y, size_) {    // put starting x, y and a size of grid to navigate
 
         this.x = x;
@@ -59,6 +79,8 @@ var PF = {
 
             function multiply(path) {
                 if ( found ) {
+                    valid = new PF.decode_and_globalize(valid_path, x, y);
+                    valid.decode_path(); //                               VALID PATH IS NOW STORED UNDER 'valid.decoded'
                     console.log(valid_path);
                     paths = [""];
                     return true;
@@ -171,15 +193,15 @@ var PF = {
 
             function start() {
                 while( found == false ) {
-                    if ( ( valid_path != "" ) || ( tries >= 1000000 ) ) {
+                    if (  valid_path != ""  ) {
                         found = true;
                     } else {
                         for ( var i = 0; i <= paths.length; i ++ ) {
-                            var decode = paths[i].split("");
+                            var decode_ = paths[i].split("");
                             clean_up();
                             function clean_up() {
-                                for ( var n = 1; n < decode.length; n ++ ) {
-                                    if ( (decode[n] == 1 && decode[n-1] == 2) || (decode[n] == 2 && decode[n-1] == 1) || (decode[n] == 3 && decode[n-1] == 4) || (decode[n] == 4 && decode[n-1] == 3) ) {
+                                for ( var n = 1; n < decode_.length; n ++ ) {
+                                    if ( (decode_[n] == 1 && decode_[n-1] == 2) || (decode_[n] == 2 && decode_[n-1] == 1) || (decode_[n] == 3 && decode_[n-1] == 4) || (decode_[n] == 4 && decode_[n-1] == 3) ) {
                                         var to_delete = paths.indexOf(paths[i]);
                                         paths.splice(to_delete, 1);
                                     }
@@ -191,7 +213,6 @@ var PF = {
                                 for ( var m = 0; m <= 1; m ++ ) {
                                     paths.shift();
                                 }
-                                clean_up();
                             }
                         }
                     }
