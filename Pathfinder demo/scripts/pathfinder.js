@@ -196,7 +196,12 @@ var PF = {
                     if (  valid_path != ""  ) {
                         found = true;
                     } else {
-                        for ( var i = 0; i <= paths.length; i ++ ) {
+                        var PLEASE_WORK = paths.length;
+                        for ( var i = 0; i <= PLEASE_WORK; i ++ ) {
+                            if ( found ) {
+                                multiply("");
+                                break;
+                            }
                             var decode_ = paths[i].split("");
                             clean_up();
                             function clean_up() {
@@ -209,10 +214,11 @@ var PF = {
                             }
                             
                             multiply(paths[i]);
-                            if ( paths.length > 1000 ) {
-                                for ( var m = 0; m <= 1; m ++ ) {
-                                    paths.shift();
-                                }
+                        }
+                        for ( var m = 0; m <= paths.length - 1; m ++ ) {
+                            if ( paths[m].length < paths[paths.length - 1].length ) {
+                                paths.shift();
+                                m = 0;
                             }
                         }
                     }
